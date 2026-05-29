@@ -1,51 +1,82 @@
 body {
-  background: #fff5fa;
+  background: linear-gradient(135deg, #fff0f7, #ffe3f1);
+  font-family: Arial;
 }
 
 /* TITLE */
 .title {
-  color: #ff2f92;
-  font-size: 2.5rem;
+  color: #ff007f;
+  font-weight: 900;
+  letter-spacing: 1px;
 }
 
-/* PINK BUTTON */
+/* CARDS (IMPORTANT FIX) */
+.card {
+  border: none;
+  border-radius: 18px;
+
+  background: white;
+
+  box-shadow:
+    0 10px 25px rgba(255, 0, 127, 0.15),
+    0 2px 8px rgba(0,0,0,0.05);
+
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 15px 35px rgba(255, 0, 127, 0.25);
+}
+
+/* HEADINGS */
+h1, h2, h3 {
+  color: #ff007f;
+}
+
+/* BUTTON */
 .btn-pink {
-  background: #ff4fa3;
+  background: linear-gradient(135deg, #ff007f, #ff4fa3, #ff85c2);
   color: white;
   font-weight: bold;
+
+  border: none;
+  border-radius: 14px;
+
+  box-shadow: 0 8px 20px rgba(255, 0, 127, 0.3);
 }
 
 .btn-pink:hover {
-  background: #ff2f92;
+  transform: scale(1.03);
+  box-shadow: 0 12px 28px rgba(255, 0, 127, 0.4);
 }
 
-/* CARDS */
-.card {
-  border: none;
-  border-radius: 16px;
+/* PROGRESS BAR */
+.progress {
+  height: 18px;
+  background: #ffd1e6;
+  border-radius: 30px;
+  overflow: hidden;
 }
 
-/* PROGRESS */
-.bg-pink {
-  background: linear-gradient(135deg,#ff4fa3,#ff8ccf) !important;
+#progressBar {
+  background: linear-gradient(90deg, #ff007f, #ff4fa3, #ff85c2);
 }
 
-/* CHART FIX */
+/* INPUTS */
+input, select {
+  border: 2px solid #ffb6d9;
+  border-radius: 12px;
+}
+
+input:focus, select:focus {
+  border-color: #ff007f;
+  box-shadow: 0 0 10px rgba(255,0,127,0.2);
+}
+
+/* CHARTS */
 canvas {
-  margin-top: 15px;
-  width: 100% !important;
-  max-height: 250px;
-}
-
-/* MOBILE FIX */
-@media (max-width: 768px) {
-
-  .title {
-    font-size: 2rem;
-  }
-
-  h3 {
-    font-size: 1.4rem;
-  }
-
+  border-radius: 18px;
+  box-shadow: 0 10px 25px rgba(255, 0, 127, 0.12);
 }
