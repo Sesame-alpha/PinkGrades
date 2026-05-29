@@ -13,10 +13,6 @@ function getZone(m) {
   return "danger";
 }
 
-function gpa(mark) {
-  return (mark / 25); // simple 4-point scale
-}
-
 function addGrade() {
 
   const module = document.getElementById("module").value;
@@ -40,10 +36,7 @@ function calculate() {
 
   const avg = valid.reduce((a,b)=>a+b.marks,0)/valid.length;
 
-  const cgpa = valid.reduce((a,b)=>a+gpa(b.marks),0)/valid.length;
-
   document.getElementById("avg").innerText = avg.toFixed(2);
-  document.getElementById("cgpa").innerText = cgpa.toFixed(2);
 
   const best = valid.reduce((a,b)=>a.marks>b.marks?a:b);
   const worst = valid.reduce((a,b)=>a.marks<b.marks?a:b);
@@ -51,15 +44,14 @@ function calculate() {
   document.getElementById("best").innerText = best.module;
   document.getElementById("worst").innerText = worst.module;
 
-  // GOAL
+  // GOAL PROGRESS
   let progress = (avg / 80) * 100;
   document.getElementById("progressBar").style.width = progress + "%";
 
-  // INSIGHTS
+  // AI INSIGHTS
   let weak = valid.filter(d => d.marks < 70).length;
 
-  document.getElementById("insightText") =
-    document.getElementById("insightText").innerText =
+  document.getElementById("insightText").innerText =
     `Weak modules: ${weak}. Focus improvement needed.`;
 
   // SEMESTER COMPARISON
