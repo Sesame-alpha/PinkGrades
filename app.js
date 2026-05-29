@@ -20,12 +20,17 @@ function saveData() {
 // ADD GRADE
 // ==============================
 function addGrade() {
+  console.log("ADD CLICKED");
+
   const module = document.getElementById("module").value;
   const marks = document.getElementById("marks").value;
   const year = document.getElementById("year").value;
   const semester = document.getElementById("semester").value;
 
-  if (!module || !marks) return;
+  if (!module || !marks) {
+    alert("Fill in all fields");
+    return;
+  }
 
   data.push({
     module: module.trim(),
