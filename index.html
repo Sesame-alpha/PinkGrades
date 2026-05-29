@@ -1,28 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pink Grades Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pink Grades</title>
 
   <link rel="stylesheet" href="style.css">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
-<header>
-  <h1>Grade Tracker Dashboard- Sesame Dithupa</h1>
-</header>
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>🌸 Pink Grades-Sesame Dithupa</h2>
 
-<div class="container">
+  <a href="#dashboard">Dashboard</a>
+  <a href="#analytics">Analytics</a>
+  <a href="#goals">Goals</a>
+  <a href="#insights">Insights</a>
+  <a href="#achievements">Achievements</a>
+</div>
 
-  <!-- INPUT FORM -->
-  <div class="form">
-    <h3>Add Grade</h3>
+<!-- MAIN -->
+<div class="main">
 
-    <input id="module" placeholder="Module Name">
+  <!-- HEADER -->
+  <section id="dashboard" class="section">
+    <h1>Welcome back 🌸</h1>
 
+    <div class="cards">
+      <div class="card"><h3>Average</h3><p id="avg">0</p></div>
+      <div class="card"><h3>CGPA</h3><p id="cgpa">0</p></div>
+      <div class="card"><h3>Best Module</h3><p id="best">-</p></div>
+      <div class="card"><h3>Worst Module</h3><p id="worst">-</p></div>
+    </div>
+  </section>
+
+  <!-- GOALS -->
+  <section id="goals" class="section">
+    <h2>🎯 Goal Tracker</h2>
+    <p>Goal: 80%</p>
+    <div class="progress">
+      <div id="progressBar"></div>
+    </div>
+  </section>
+
+  <!-- INPUT -->
+  <section class="section">
+    <h2>➕ Add Grade</h2>
+
+    <input id="module" placeholder="Module">
     <input id="marks" type="number" placeholder="Marks">
 
     <select id="year">
@@ -37,68 +66,40 @@
       <option value="2">Semester 2</option>
     </select>
 
-    <button onclick="addGrade()">Add Grade</button>
-  </div>
+    <button onclick="addGrade()">Add</button>
+  </section>
 
-  <!-- FILTERS -->
-  <div class="filters">
-
-    <select id="yearFilter">
-      <option value="all">All Years</option>
-      <option value="1">Year 1</option>
-      <option value="2">Year 2</option>
-      <option value="3">Year 3</option>
-      <option value="4">Year 4</option>
-    </select>
-
-    <select id="semFilter">
-      <option value="all">All Semesters</option>
-      <option value="1">Semester 1</option>
-      <option value="2">Semester 2</option>
-    </select>
-
-  </div>
-
-  <!-- STATS -->
-  <div class="cards">
-
-    <div class="card">
-      <h3>Average</h3>
-      <p id="avg">0</p>
-    </div>
-
-    <div class="card">
-      <h3>Best Module</h3>
-      <p id="best">-</p>
-    </div>
-
-    <div class="card">
-      <h3>Worst Module</h3>
-      <p id="worst">-</p>
-    </div>
-
-  </div>
-
-  <!-- AI INSIGHTS -->
-  <div class="card insight-card">
-    <h3>AI Insights</h3>
-    <p id="insights">No insights yet</p>
-  </div>
-
-  <!-- CHARTS -->
-  <div class="charts">
+  <!-- ANALYTICS -->
+  <section id="analytics" class="section">
+    <h2>📊 Analytics</h2>
 
     <canvas id="lineChart"></canvas>
-
     <canvas id="barChart"></canvas>
-
     <canvas id="pieChart"></canvas>
 
-  </div>
+    <div class="card">
+      <h3>Semester Comparison</h3>
+      <p id="comparison">-</p>
+    </div>
+  </section>
+
+  <!-- INSIGHTS -->
+  <section id="insights" class="section">
+    <h2>🧠 AI Insights</h2>
+    <div class="card">
+      <p id="insightText">No insights yet</p>
+    </div>
+  </section>
+
+  <!-- ACHIEVEMENTS -->
+  <section id="achievements" class="section">
+    <h2>🏆 Achievements</h2>
+    <div id="achievementsBox"></div>
+  </section>
 
 </div>
 
 <script src="app.js"></script>
 
 </body>
-  </html>
+</html>
