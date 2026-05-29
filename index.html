@@ -3,52 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pink Grades</title>
+  <title>PinkGrades</title>
 
-  <link rel="stylesheet" href="style.css">
-
+  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>🌸 Pink Grades-Sesame Dithupa</h2>
+<!-- TOP NAV -->
+<nav class="topnav">
+  <h2>🌸 PinkGrades</h2>
 
-  <a href="#dashboard">Dashboard</a>
-  <a href="#analytics">Analytics</a>
-  <a href="#goals">Goals</a>
-  <a href="#insights">Insights</a>
-  <a href="#achievements">Achievements</a>
-</div>
+  <div class="links">
+    <a href="#dashboard">Dashboard</a>
+    <a href="#goals">Goals</a>
+    <a href="#analytics">Analytics</a>
+    <a href="#insights">Insights</a>
+    <a href="#achievements">Achievements</a>
+  </div>
+</nav>
 
-<!-- MAIN -->
-<div class="main">
+<div class="container">
 
-  <!-- HEADER -->
-  <section id="dashboard" class="section">
+  <!-- DASHBOARD -->
+  <section id="dashboard">
+
     <h1>Welcome back 🌸</h1>
 
     <div class="cards">
-      <div class="card"><h3>Average</h3><p id="avg">0</p></div>
-      <div class="card"><h3>CGPA</h3><p id="cgpa">0</p></div>
-      <div class="card"><h3>Best Module</h3><p id="best">-</p></div>
-      <div class="card"><h3>Worst Module</h3><p id="worst">-</p></div>
+
+      <div class="card">
+        <h3>Average</h3>
+        <p id="avg">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Best Module</h3>
+        <p id="best">-</p>
+      </div>
+
+      <div class="card">
+        <h3>Worst Module</h3>
+        <p id="worst">-</p>
+      </div>
+
     </div>
+
   </section>
 
   <!-- GOALS -->
-  <section id="goals" class="section">
+  <section id="goals">
     <h2>🎯 Goal Tracker</h2>
-    <p>Goal: 80%</p>
+    <p>Target: 80%</p>
+
     <div class="progress">
       <div id="progressBar"></div>
     </div>
   </section>
 
   <!-- INPUT -->
-  <section class="section">
+  <section>
     <h2>➕ Add Grade</h2>
 
     <input id="module" placeholder="Module">
@@ -66,11 +81,11 @@
       <option value="2">Semester 2</option>
     </select>
 
-    <button onclick="addGrade()">Add</button>
+    <button onclick="addGrade()">Add Grade</button>
   </section>
 
   <!-- ANALYTICS -->
-  <section id="analytics" class="section">
+  <section id="analytics">
     <h2>📊 Analytics</h2>
 
     <canvas id="lineChart"></canvas>
@@ -84,15 +99,17 @@
   </section>
 
   <!-- INSIGHTS -->
-  <section id="insights" class="section">
+  <section id="insights">
     <h2>🧠 AI Insights</h2>
+
     <div class="card">
       <p id="insightText">No insights yet</p>
     </div>
+
   </section>
 
   <!-- ACHIEVEMENTS -->
-  <section id="achievements" class="section">
+  <section id="achievements">
     <h2>🏆 Achievements</h2>
     <div id="achievementsBox"></div>
   </section>
