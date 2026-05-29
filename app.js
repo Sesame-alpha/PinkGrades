@@ -1,17 +1,18 @@
-console.log("🔥 app.js is connected");
+console.log("🔥 app.js loaded");
+
 let data = [];
 
 let lineChart, barChart, pieChart;
 
 // ==============================
-// LOAD DATA
+// LOAD
 // ==============================
 function loadData() {
   data = JSON.parse(localStorage.getItem("grades")) || [];
 }
 
 // ==============================
-// SAVE DATA
+// SAVE
 // ==============================
 function saveData() {
   localStorage.setItem("grades", JSON.stringify(data));
@@ -21,23 +22,21 @@ function saveData() {
 // ADD GRADE
 // ==============================
 function addGrade() {
-  console.log("ADD CLICKED");
-
   const module = document.getElementById("module").value;
   const marks = document.getElementById("marks").value;
   const year = document.getElementById("year").value;
   const semester = document.getElementById("semester").value;
 
   if (!module || !marks) {
-    alert("Fill in all fields");
+    alert("Please fill all fields");
     return;
   }
 
   data.push({
     module: module.trim(),
     marks: Number(marks),
-    year: Number(year),
-    semester: Number(semester)
+    year: String(year),
+    semester: String(semester)
   });
 
   saveData();
@@ -48,22 +47,21 @@ function addGrade() {
 }
 
 // ==============================
-// FILTER DATA (YEAR + SEMESTER)
+// FILTER
 // ==============================
 function getFilteredData() {
   const year = document.getElementById("filterYear")?.value || "all";
   const semester = document.getElementById("filterSemester")?.value || "all";
 
   return data.filter(d => {
-    const yearMatch = year === "all" || String(d.year) === year;
-    const semMatch = semester === "all" || String(d.semester) === semester;
-
+    const yearMatch = year === "all" || d.year === year;
+    const semMatch = semester === "all" || d.semester === semester;
     return yearMatch && semMatch;
   });
 }
 
 // ==============================
-// GROUP DATA FOR CHARTS
+// GROUP DATA
 // ==============================
 function groupData() {
   const filtered = getFilteredData();
@@ -71,61 +69,37 @@ function groupData() {
   const grouped = {};
 
   filtered.forEach(d => {
-    const key = d.module;
-
-    if (!grouped[key]) grouped[key] = [];
-
-    grouped[key].push(Number(d.marks));
+    if (!grouped[d.module]) grouped[d.module] = [];
+    grouped[d.module].push(Number(d.marks));
   });
 
   const labels = Object.keys(grouped);
 
-  const marks = labels.map(m =>
-    grouped[m].reduce((a, b) => a + b, 0) / grouped[m].length
+  const marks = labels.map(l =>
+    grouped[l].reduce((a, b) => a + b, 0) / grouped[l].length
   );
 
   return { labels, marks };
 }
 
 // ==============================
-// ZONES (PIE CHART)
+// ZONES
 // ==============================
 function getZones() {
   const filtered = getFilteredData();
 
-  let zones = { super: 0, good: 0, pass: 0, danger: 0 };
+  const zones = { super: 0, good: 0, pass: 0, danger: 0 };
 
   filtered.forEach(d => {
-    const mark = Number(d.marks);
+    const m = Number(d.marks);
 
-    if (mark >= 85) zones.super++;
-    else if (mark >= 75) zones.good++;
-    else if (mark >= 70) zones.pass++;
+    if (m >= 85) zones.super++;
+    else if (m >= 75) zones.good++;
+    else if (m >= 70) zones.pass++;
     else zones.danger++;
   });
 
   return zones;
-}
-
-// ==============================
-// GOAL TRACKER
-// ==============================
-function updateGoal() {
-  const filtered = getFilteredData();
-
-  if (filtered.length === 0) {
-    document.getElementById("progressBar").style.width = "0%";
-    return;
-  }
-
-  const avg =
-    filtered.reduce((sum, d) => sum + Number(d.marks), 0) / filtered.length;
-
-  const target = 70;
-
-  const percent = Math.min((avg / target) * 100, 100);
-
-  document.getElementById("progressBar").style.width = percent + "%";
 }
 
 // ==============================
@@ -141,11 +115,29 @@ function updateStats() {
 
   document.getElementById("avg").innerText = avg.toFixed(1);
 
-  const best = [...filtered].sort((a, b) => b.marks - a.marks)[0];
-  const worst = [...filtered].sort((a, b) => a.marks - b.marks)[0];
+  const sorted = [...filtered].sort((a, b) => b.marks - a.marks);
 
-  document.getElementById("best").innerText = best.module;
-  document.getElementById("avgModule").innerText = worst.module;
+  document.getElementById("best").innerText = sorted[0].module;
+  document.getElementById("avgModule").innerText = sorted[sorted.length - 1].module;
+}
+
+// ==============================
+// GOAL
+// ==============================
+function updateGoal() {
+  const filtered = getFilteredData();
+
+  if (filtered.length === 0) {
+    document.getElementById("progressBar").style.width = "0%";
+    return;
+  }
+
+  const avg =
+    filtered.reduce((sum, d) => sum + Number(d.marks), 0) / filtered.length;
+
+  const percent = Math.min((avg / 70) * 100, 100);
+
+  document.getElementById("progressBar").style.width = percent + "%";
 }
 
 // ==============================
@@ -159,12 +151,18 @@ function renderCharts() {
   if (barChart) barChart.destroy();
   if (pieChart) pieChart.destroy();
 
-  lineChart = new Chart(document.getElementById("lineChart"), {
+  const lineCtx = document.getElementById("lineChart");
+  const barCtx = document.getElementById("barChart");
+  const pieCtx = document.getElementById("pieChart");
+
+  if (!lineCtx || !barCtx || !pieCtx) return;
+
+  lineChart = new Chart(lineCtx, {
     type: "line",
     data: {
       labels,
       datasets: [{
-        label: "Module Performance",
+        label: "Performance",
         data: marks,
         borderColor: "#ff0a78",
         backgroundColor: "#ff8ccf",
@@ -173,7 +171,7 @@ function renderCharts() {
     }
   });
 
-  barChart = new Chart(document.getElementById("barChart"), {
+  barChart = new Chart(barCtx, {
     type: "bar",
     data: {
       labels,
@@ -185,18 +183,13 @@ function renderCharts() {
     }
   });
 
-  pieChart = new Chart(document.getElementById("pieChart"), {
+  pieChart = new Chart(pieCtx, {
     type: "pie",
     data: {
       labels: Object.keys(zones),
       datasets: [{
         data: Object.values(zones),
-        backgroundColor: [
-          "#ff0a78",
-          "#ff4fa3",
-          "#ff8ccf",
-          "#ffd1e8"
-        ]
+        backgroundColor: ["#ff0a78", "#ff4fa3", "#ff8ccf", "#ffd1e8"]
       }]
     }
   });
@@ -206,17 +199,13 @@ function renderCharts() {
 // MAIN RENDER
 // ==============================
 function renderAll() {
-  try {
-    renderCharts();
-    updateGoal();
-    updateStats();
-  } catch (e) {
-    console.log("Render error:", e);
-  }
+  renderCharts();
+  updateStats();
+  updateGoal();
 }
 
 // ==============================
-// FILTER EVENT LISTENERS
+// FILTER EVENTS
 // ==============================
 document.getElementById("filterYear")?.addEventListener("change", renderAll);
 document.getElementById("filterSemester")?.addEventListener("change", renderAll);
