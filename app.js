@@ -1,228 +1,131 @@
-let data = JSON.parse(localStorage.getItem("grades")) || [
+let data = JSON.parse(localStorage.getItem("grades")) || [];
 
-  { year: 1, semester: 1, module: "BPA", marks: 76 },
-  { year: 1, semester: 1, module: "CT", marks: 86 },
-  { year: 1, semester: 1, module: "CMS", marks: 73 },
-  { year: 1, semester: 1, module: "CSS", marks: 68 }
+let lineChart, barChart, pieChart;
 
-];
-
-const yearFilter = document.getElementById("yearFilter");
-const semFilter = document.getElementById("semFilter");
-
-let lineChart;
-let barChart;
-let pieChart;
-
-function saveData() {
+function save() {
   localStorage.setItem("grades", JSON.stringify(data));
 }
 
-function getZone(mark) {
-
-  if (mark >= 85) return "super";
-
-  if (mark >= 75) return "good";
-
-  if (mark >= 70) return "pass";
-
+function getZone(m) {
+  if (m >= 85) return "super";
+  if (m >= 75) return "good";
+  if (m >= 70) return "pass";
   return "danger";
+}
+
+function gpa(mark) {
+  return (mark / 25); // simple 4-point scale
 }
 
 function addGrade() {
 
   const module = document.getElementById("module").value;
-
   const marks = Number(document.getElementById("marks").value);
-
   const year = Number(document.getElementById("year").value);
-
   const semester = Number(document.getElementById("semester").value);
 
   if (!module || isNaN(marks)) return;
 
-  data.push({
-    module,
-    marks,
-    year,
-    semester
-  });
+  data.push({ module, marks, year, semester });
 
-  saveData();
-
+  save();
   update();
+}
+
+function calculate() {
+
+  if (data.length === 0) return;
+
+  const valid = data.filter(d => d.marks !== null);
+
+  const avg = valid.reduce((a,b)=>a+b.marks,0)/valid.length;
+
+  const cgpa = valid.reduce((a,b)=>a+gpa(b.marks),0)/valid.length;
+
+  document.getElementById("avg").innerText = avg.toFixed(2);
+  document.getElementById("cgpa").innerText = cgpa.toFixed(2);
+
+  const best = valid.reduce((a,b)=>a.marks>b.marks?a:b);
+  const worst = valid.reduce((a,b)=>a.marks<b.marks?a:b);
+
+  document.getElementById("best").innerText = best.module;
+  document.getElementById("worst").innerText = worst.module;
+
+  // GOAL
+  let progress = (avg / 80) * 100;
+  document.getElementById("progressBar").style.width = progress + "%";
+
+  // INSIGHTS
+  let weak = valid.filter(d => d.marks < 70).length;
+
+  document.getElementById("insightText") =
+    document.getElementById("insightText").innerText =
+    `Weak modules: ${weak}. Focus improvement needed.`;
+
+  // SEMESTER COMPARISON
+  let sem1 = valid.filter(d => d.semester == 1);
+  let sem2 = valid.filter(d => d.semester == 2);
+
+  let avg1 = sem1.length ? sem1.reduce((a,b)=>a+b.marks,0)/sem1.length : 0;
+  let avg2 = sem2.length ? sem2.reduce((a,b)=>a+b.marks,0)/sem2.length : 0;
+
+  document.getElementById("comparison").innerText =
+    `Sem 1: ${avg1.toFixed(1)} | Sem 2: ${avg2.toFixed(1)}`;
+
+  // ACHIEVEMENTS
+  let ach = [];
+
+  if (valid.filter(d=>d.marks>=85).length >= 1)
+    ach.push("🏆 High Performer");
+
+  if (valid.filter(d=>d.marks<70).length === 0)
+    ach.push("🌸 No Danger Modules");
+
+  document.getElementById("achievementsBox").innerHTML =
+    ach.map(a=>`<div class="card">${a}</div>`).join("");
 
 }
 
-function filterData() {
+function charts() {
 
-  return data.filter(item => {
+  const valid = data.filter(d=>d.marks!==null);
 
-    const yearMatch =
-      yearFilter.value === "all" ||
-      item.year == yearFilter.value;
-
-    const semMatch =
-      semFilter.value === "all" ||
-      item.semester == semFilter.value;
-
-    return yearMatch && semMatch;
-
-  });
-
-}
-
-function updateStats(filtered) {
-
-  if (filtered.length === 0) return;
-
-  const total =
-    filtered.reduce((sum, item) => sum + item.marks, 0);
-
-  const average = total / filtered.length;
-
-  document.getElementById("avg").innerText =
-    average.toFixed(2);
-
-  const best =
-    filtered.reduce((a, b) =>
-      a.marks > b.marks ? a : b
-    );
-
-  const worst =
-    filtered.reduce((a, b) =>
-      a.marks < b.marks ? a : b
-    );
-
-  document.getElementById("best").innerText =
-    `${best.module} (${best.marks})`;
-
-  document.getElementById("worst").innerText =
-    `${worst.module} (${worst.marks})`;
-
-}
-
-function aiInsights(filtered) {
-
-  if (filtered.length === 0) return;
-
-  const weakModules =
-    filtered.filter(item => item.marks < 70).length;
-
-  const strongModules =
-    filtered.filter(item => item.marks >= 85).length;
-
-  const weakest =
-    filtered.reduce((a, b) =>
-      a.marks < b.marks ? a : b
-    );
-
-  let message =
-    `Weak modules: ${weakModules}. `;
-
-  message +=
-    `Strong modules: ${strongModules}. `;
-
-  message +=
-    `Focus more on ${weakest.module} (${weakest.marks}).`;
-
-  document.getElementById("insights").innerText =
-    message;
-
-}
-
-function updateCharts(filtered) {
-
-  const labels =
-    filtered.map(item => item.module);
-
-  const marks =
-    filtered.map(item => item.marks);
-
-  const zones = {
-    super: 0,
-    good: 0,
-    pass: 0,
-    danger: 0
-  };
-
-  filtered.forEach(item => {
-    zones[getZone(item.marks)]++;
-  });
+  const labels = valid.map(d=>d.module);
+  const marks = valid.map(d=>d.marks);
 
   if (lineChart) lineChart.destroy();
   if (barChart) barChart.destroy();
   if (pieChart) pieChart.destroy();
 
-  lineChart = new Chart(
-    document.getElementById("lineChart"),
-    {
-      type: "line",
-      data: {
-        labels: labels,
-        datasets: [{
-          label: "Marks",
-          data: marks,
-          borderColor: "blue"
-        }]
-      }
-    }
-  );
+  lineChart = new Chart(document.getElementById("lineChart"), {
+    type: "line",
+    data: { labels, datasets: [{ data: marks, borderColor: "#ff4fa3" }] }
+  });
 
-  barChart = new Chart(
-    document.getElementById("barChart"),
-    {
-      type: "bar",
-      data: {
-        labels: labels,
-        datasets: [{
-          label: "Modules",
-          data: marks,
-          backgroundColor: "green"
-        }]
-      }
-    }
-  );
+  barChart = new Chart(document.getElementById("barChart"), {
+    type: "bar",
+    data: { labels, datasets: [{ data: marks, backgroundColor: "#ff85c2" }] }
+  });
 
-  pieChart = new Chart(
-    document.getElementById("pieChart"),
-    {
-      type: "pie",
-      data: {
-        labels: [
-          "Super",
-          "Good",
-          "Pass",
-          "Danger"
-        ],
-        datasets: [{
-          data: [
-            zones.super,
-            zones.good,
-            zones.pass,
-            zones.danger
-          ]
-        }]
-      }
+  let zones = {super:0,good:0,pass:0,danger:0};
+
+  valid.forEach(d=>{
+    zones[getZone(d.marks)]++;
+  });
+
+  pieChart = new Chart(document.getElementById("pieChart"), {
+    type: "pie",
+    data: {
+      labels:["Super","Good","Pass","Danger"],
+      datasets:[{ data:Object.values(zones) }]
     }
-  );
+  });
 
 }
 
 function update() {
-
-  const filtered = filterData();
-
-  updateStats(filtered);
-
-  aiInsights(filtered);
-
-  updateCharts(filtered);
-
+  calculate();
+  charts();
 }
-
-yearFilter.addEventListener("change", update);
-
-semFilter.addEventListener("change", update);
 
 update();
