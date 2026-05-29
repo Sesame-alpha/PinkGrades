@@ -1,48 +1,52 @@
-// ==============================
-// LOAD DATA (LOCALSTORAGE)
-// ==============================
-let data = JSON.parse(localStorage.getItem("grades")) || [];
+let data = [];
+
+let lineChart, barChart, pieChart;
 
 // ==============================
-// MODULE NORMALIZER (CRITICAL FIX)
+// LOAD
+// ==============================
+function loadData() {
+  data = JSON.parse(localStorage.getItem("grades")) || [];
+}
+
+// ==============================
+// NORMALIZE
 // ==============================
 function normalizeModule(name) {
   return name.toUpperCase().replace(/\s+/g, "").trim();
 }
 
 // ==============================
-// SAVE GRADE (100% DUPLICATE SAFE)
+// SAVE
 // ==============================
 function saveGrade(module, marks) {
-  let current = JSON.parse(localStorage.getItem("grades")) || [];
+  loadData();
 
   const map = new Map();
 
-  current.forEach(d => {
-    const key = normalizeModule(d.module);
-    map.set(key, {
-      module: d.module.trim(),
+  data.forEach(d => {
+    map.set(normalizeModule(d.module), {
+      module: normalizeModule(d.module),
       marks: Number(d.marks)
     });
   });
 
-  const newKey = normalizeModule(module);
-
-  map.set(newKey, {
-    module: module.trim(),
+  map.set(normalizeModule(module), {
+    module: normalizeModule(module),
     marks: Number(marks)
   });
 
   const updated = [...map.values()];
 
   localStorage.setItem("grades", JSON.stringify(updated));
+
   data = updated;
 
   renderAll();
 }
 
 // ==============================
-// GROUP DATA (AVERAGE PER MODULE)
+// GROUP
 // ==============================
 function groupData() {
   const grouped = {};
@@ -56,18 +60,15 @@ function groupData() {
 
   const labels = Object.keys(grouped);
 
-  const marks = labels.map(m => {
-    const arr = grouped[m];
-    return arr.length
-      ? arr.reduce((a, b) => a + b, 0) / arr.length
-      : 0;
-  });
+  const marks = labels.map(m =>
+    grouped[m].reduce((a, b) => a + b, 0) / grouped[m].length
+  );
 
   return { labels, marks };
 }
 
 // ==============================
-// PIE CHART ZONES
+// ZONES
 // ==============================
 function getZones() {
   let zones = { super: 0, good: 0, pass: 0, danger: 0 };
@@ -85,42 +86,65 @@ function getZones() {
 }
 
 // ==============================
-// RENDER BAR CHART
+// CHARTS
 // ==============================
-let chartInstance = null;
-
-function renderChart() {
+function renderCharts() {
   const { labels, marks } = groupData();
+  const zones = getZones();
 
-  const ctx = document.getElementById("chart");
-  if (!ctx) return;
+  if (lineChart) lineChart.destroy();
+  if (barChart) barChart.destroy();
+  if (pieChart) pieChart.destroy();
 
-  // destroy old chart (prevents stacking/duplication bugs)
-  if (chartInstance) {
-    chartInstance.destroy();
-  }
+  lineChart = new Chart(document.getElementById("lineChart"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{ data: marks, borderColor: "#ff0a78" }]
+    }
+  });
 
-  chartInstance = new Chart(ctx, {
+  barChart = new Chart(document.getElementById("barChart"), {
     type: "bar",
     data: {
-      labels: labels,
-      datasets: [{
-        label: "Module Average",
-        data: marks,
-        borderWidth: 1
-      }]
+      labels,
+      datasets: [{ data: marks, backgroundColor: "#ff4fa3" }]
+    }
+  });
+
+  pieChart = new Chart(document.getElementById("pieChart"), {
+    type: "pie",
+    data: {
+      labels: Object.keys(zones),
+      datasets: [{ data: Object.values(zones) }]
     }
   });
 }
 
 // ==============================
-// MAIN RENDER
+// ADD GRADE
 // ==============================
-function renderAll() {
-  renderChart();
+function addGrade() {
+  const module = document.getElementById("module").value;
+  const marks = document.getElementById("marks").value;
+
+  if (!module || !marks) return;
+
+  saveGrade(module, marks);
+
+  document.getElementById("module").value = "";
+  document.getElementById("marks").value = "";
 }
 
 // ==============================
-// INITIAL LOAD
+// RENDER ALL
 // ==============================
+function renderAll() {
+  renderCharts();
+}
+
+// ==============================
+// INIT
+// ==============================
+loadData();
 renderAll();
