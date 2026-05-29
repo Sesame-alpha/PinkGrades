@@ -30,8 +30,8 @@ function addGrade() {
   data.push({
     module: module.trim(),
     marks: Number(marks),
-    year: year,
-    semester: semester
+    year: Number(year),
+    semester: Number(semester)
   });
 
   saveData();
@@ -48,7 +48,7 @@ function groupData() {
   const grouped = {};
 
   data.forEach(d => {
-    const key = d.module.trim();
+    const key = d.module;
 
     if (!grouped[key]) grouped[key] = [];
 
@@ -102,6 +102,24 @@ function updateGoal() {
 }
 
 // ==============================
+// STATS
+// ==============================
+function updateStats() {
+  if (data.length === 0) return;
+
+  const avg =
+    data.reduce((sum, d) => sum + Number(d.marks), 0) / data.length;
+
+  document.getElementById("avg").innerText = avg.toFixed(1);
+
+  const best = [...data].sort((a, b) => b.marks - a.marks)[0];
+  const worst = [...data].sort((a, b) => a.marks - b.marks)[0];
+
+  document.getElementById("best").innerText = best.module;
+  document.getElementById("avgModule").innerText = worst.module;
+}
+
+// ==============================
 // CHARTS
 // ==============================
 function renderCharts() {
@@ -120,6 +138,7 @@ function renderCharts() {
         label: "Module Performance",
         data: marks,
         borderColor: "#ff0a78",
+        backgroundColor: "#ff8ccf",
         fill: false
       }]
     }
@@ -143,28 +162,15 @@ function renderCharts() {
       labels: Object.keys(zones),
       datasets: [{
         data: Object.values(zones),
-        backgroundColor: ["#ff0a78", "#ff4fa3", "#ff8ccf", "#ffd1e8"]
+        backgroundColor: [
+          "#ff0a78",
+          "#ff4fa3",
+          "#ff8ccf",
+          "#ffd1e8"
+        ]
       }]
     }
   });
-}
-
-// ==============================
-// STATS (OPTIONAL UI FIX)
-// ==============================
-function updateStats() {
-  if (data.length === 0) return;
-
-  const avg =
-    data.reduce((sum, d) => sum + Number(d.marks), 0) / data.length;
-
-  document.getElementById("avg").innerText = avg.toFixed(1);
-
-  const best = [...data].sort((a, b) => b.marks - a.marks)[0];
-  const worst = [...data].sort((a, b) => a.marks - b.marks)[0];
-
-  document.getElementById("best").innerText = best.module;
-  document.getElementById("avgModule").innerText = worst.module;
 }
 
 // ==============================
