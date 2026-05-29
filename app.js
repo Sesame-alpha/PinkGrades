@@ -1,3 +1,4 @@
+console.log("🔥 app.js is connected");
 let data = [];
 
 let lineChart, barChart, pieChart;
