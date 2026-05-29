@@ -1,22 +1,34 @@
 // ==============================
-// LOAD DATA (FROM LOCALSTORAGE)
+// LOAD DATA (LOCALSTORAGE)
 // ==============================
 let data = JSON.parse(localStorage.getItem("grades")) || [];
 
 // ==============================
-// SAVE GRADE (FIXED: NO DUPLICATES / CT FIX)
+// MODULE NORMALIZER (CRITICAL FIX)
+// ==============================
+function normalizeModule(name) {
+  return name.toUpperCase().replace(/\s+/g, "").trim();
+}
+
+// ==============================
+// SAVE GRADE (100% DUPLICATE SAFE)
 // ==============================
 function saveGrade(module, marks) {
   let current = JSON.parse(localStorage.getItem("grades")) || [];
 
-  // prevent duplicate modules (CT spam fix)
   const map = new Map();
 
   current.forEach(d => {
-    map.set(d.module.toUpperCase().trim(), d);
+    const key = normalizeModule(d.module);
+    map.set(key, {
+      module: d.module.trim(),
+      marks: Number(d.marks)
+    });
   });
 
-  map.set(module.toUpperCase().trim(), {
+  const newKey = normalizeModule(module);
+
+  map.set(newKey, {
     module: module.trim(),
     marks: Number(marks)
   });
@@ -26,7 +38,7 @@ function saveGrade(module, marks) {
   localStorage.setItem("grades", JSON.stringify(updated));
   data = updated;
 
-  renderAll(); // refresh UI after save
+  renderAll();
 }
 
 // ==============================
@@ -36,10 +48,10 @@ function groupData() {
   const grouped = {};
 
   data.forEach(d => {
-    const key = d.module.toUpperCase().trim();
+    const key = normalizeModule(d.module);
 
     if (!grouped[key]) grouped[key] = [];
-    grouped[key].push(d.marks);
+    grouped[key].push(Number(d.marks));
   });
 
   const labels = Object.keys(grouped);
@@ -61,9 +73,11 @@ function getZones() {
   let zones = { super: 0, good: 0, pass: 0, danger: 0 };
 
   data.forEach(d => {
-    if (d.marks >= 85) zones.super++;
-    else if (d.marks >= 75) zones.good++;
-    else if (d.marks >= 70) zones.pass++;
+    const mark = Number(d.marks);
+
+    if (mark >= 85) zones.super++;
+    else if (mark >= 75) zones.good++;
+    else if (mark >= 70) zones.pass++;
     else zones.danger++;
   });
 
@@ -73,14 +87,20 @@ function getZones() {
 // ==============================
 // RENDER BAR CHART
 // ==============================
+let chartInstance = null;
+
 function renderChart() {
   const { labels, marks } = groupData();
 
   const ctx = document.getElementById("chart");
-
   if (!ctx) return;
 
-  new Chart(ctx, {
+  // destroy old chart (prevents stacking/duplication bugs)
+  if (chartInstance) {
+    chartInstance.destroy();
+  }
+
+  chartInstance = new Chart(ctx, {
     type: "bar",
     data: {
       labels: labels,
@@ -94,12 +114,10 @@ function renderChart() {
 }
 
 // ==============================
-// MAIN RENDER FUNCTION
+// MAIN RENDER
 // ==============================
 function renderAll() {
   renderChart();
-  // If you have pie chart, call it here:
-  // renderPieChart(getZones());
 }
 
 // ==============================
