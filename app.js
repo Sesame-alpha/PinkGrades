@@ -3,58 +3,55 @@ let data = [];
 let lineChart, barChart, pieChart;
 
 // ==============================
-// LOAD
+// LOAD DATA
 // ==============================
 function loadData() {
   data = JSON.parse(localStorage.getItem("grades")) || [];
 }
 
 // ==============================
-// NORMALIZE
+// SAVE DATA
 // ==============================
-function normalizeModule(name) {
-  return name.toUpperCase().replace(/\s+/g, "").trim();
+function saveData() {
+  localStorage.setItem("grades", JSON.stringify(data));
 }
 
 // ==============================
-// SAVE
+// ADD GRADE
 // ==============================
-function saveGrade(module, marks) {
-  loadData();
+function addGrade() {
+  const module = document.getElementById("module").value;
+  const marks = document.getElementById("marks").value;
+  const year = document.getElementById("year").value;
+  const semester = document.getElementById("semester").value;
 
-  const map = new Map();
+  if (!module || !marks) return;
 
-  data.forEach(d => {
-    map.set(normalizeModule(d.module), {
-      module: normalizeModule(d.module),
-      marks: Number(d.marks)
-    });
+  data.push({
+    module: module.trim(),
+    marks: Number(marks),
+    year: year,
+    semester: semester
   });
 
-  map.set(normalizeModule(module), {
-    module: normalizeModule(module),
-    marks: Number(marks)
-  });
-
-  const updated = [...map.values()];
-
-  localStorage.setItem("grades", JSON.stringify(updated));
-
-  data = updated;
-
+  saveData();
   renderAll();
+
+  document.getElementById("module").value = "";
+  document.getElementById("marks").value = "";
 }
 
 // ==============================
-// GROUP
+// GROUP DATA (FOR CHARTS)
 // ==============================
 function groupData() {
   const grouped = {};
 
   data.forEach(d => {
-    const key = normalizeModule(d.module);
+    const key = d.module.trim();
 
     if (!grouped[key]) grouped[key] = [];
+
     grouped[key].push(Number(d.marks));
   });
 
@@ -68,7 +65,7 @@ function groupData() {
 }
 
 // ==============================
-// ZONES
+// ZONES (PIE CHART)
 // ==============================
 function getZones() {
   let zones = { super: 0, good: 0, pass: 0, danger: 0 };
@@ -86,6 +83,25 @@ function getZones() {
 }
 
 // ==============================
+// GOAL TRACKER
+// ==============================
+function updateGoal() {
+  if (data.length === 0) {
+    document.getElementById("progressBar").style.width = "0%";
+    return;
+  }
+
+  const avg =
+    data.reduce((sum, d) => sum + Number(d.marks), 0) / data.length;
+
+  const target = 70;
+
+  const percent = Math.min((avg / target) * 100, 100);
+
+  document.getElementById("progressBar").style.width = percent + "%";
+}
+
+// ==============================
 // CHARTS
 // ==============================
 function renderCharts() {
@@ -100,7 +116,12 @@ function renderCharts() {
     type: "line",
     data: {
       labels,
-      datasets: [{ data: marks, borderColor: "#ff0a78" }]
+      datasets: [{
+        label: "Module Performance",
+        data: marks,
+        borderColor: "#ff0a78",
+        fill: false
+      }]
     }
   });
 
@@ -108,7 +129,11 @@ function renderCharts() {
     type: "bar",
     data: {
       labels,
-      datasets: [{ data: marks, backgroundColor: "#ff4fa3" }]
+      datasets: [{
+        label: "Average Marks",
+        data: marks,
+        backgroundColor: "#ff4fa3"
+      }]
     }
   });
 
@@ -116,31 +141,39 @@ function renderCharts() {
     type: "pie",
     data: {
       labels: Object.keys(zones),
-      datasets: [{ data: Object.values(zones) }]
+      datasets: [{
+        data: Object.values(zones),
+        backgroundColor: ["#ff0a78", "#ff4fa3", "#ff8ccf", "#ffd1e8"]
+      }]
     }
   });
 }
 
 // ==============================
-// ADD GRADE
+// STATS (OPTIONAL UI FIX)
 // ==============================
-function addGrade() {
-  const module = document.getElementById("module").value;
-  const marks = document.getElementById("marks").value;
+function updateStats() {
+  if (data.length === 0) return;
 
-  if (!module || !marks) return;
+  const avg =
+    data.reduce((sum, d) => sum + Number(d.marks), 0) / data.length;
 
-  saveGrade(module, marks);
+  document.getElementById("avg").innerText = avg.toFixed(1);
 
-  document.getElementById("module").value = "";
-  document.getElementById("marks").value = "";
+  const best = [...data].sort((a, b) => b.marks - a.marks)[0];
+  const worst = [...data].sort((a, b) => a.marks - b.marks)[0];
+
+  document.getElementById("best").innerText = best.module;
+  document.getElementById("avgModule").innerText = worst.module;
 }
 
 // ==============================
-// RENDER ALL
+// MAIN RENDER
 // ==============================
 function renderAll() {
   renderCharts();
+  updateGoal();
+  updateStats();
 }
 
 // ==============================
