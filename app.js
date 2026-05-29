@@ -206,9 +206,13 @@ function renderCharts() {
 // MAIN RENDER
 // ==============================
 function renderAll() {
-  renderCharts();
-  updateGoal();
-  updateStats();
+  try {
+    renderCharts();
+    updateGoal();
+    updateStats();
+  } catch (e) {
+    console.log("Render error:", e);
+  }
 }
 
 // ==============================
